@@ -1,5 +1,1 @@
-This is my personal repo with various configuration files
-
-Test new
-Another line
-and another line
+This is my personal repository with various configuration files

@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  webserver:
+    image: nginx:1.15-alpine
+    restart: always
+    ports:
+      - '80:88'
+    volumes:
+      - ./html:/usr/share/nginx/html
+
+  database:
+    image: mysql:5.6.41
+    restart: always
+    ports:
+      - '3306:3306'
+    secrets:
+      MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql-root
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+    db-data:
