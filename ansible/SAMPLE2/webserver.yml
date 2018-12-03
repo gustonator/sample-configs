@@ -1,0 +1,6 @@
+---
+- hosts: application
+  become: true
+  roles:
+    - apache2
+    - demo_app 

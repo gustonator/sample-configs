@@ -1,0 +1,14 @@
+---
+- hosts: control
+  become: true
+  tasks:
+    - name: install tools
+      apt:
+        pkg: "{{ item }}"
+        state: present
+        update_cache: yes
+      vars:
+        item:
+          - curl
+          - python-httplib2
+  

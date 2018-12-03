@@ -1,0 +1,31 @@
+---
+- hosts: loadbalancer
+  tasks:
+    - name: verify backend response
+      uri:
+        url: http://{{ item }}
+        return_content: yes
+      with_items: 
+         - "{{ groups['application'] }}"
+      register: app_index
+
+    - name: "fail if there is missing content"
+      fail:
+        msg: "Index failed to return content"
+      when: "'Hello, from sunny' not in item.content"
+      with_items: "{{ app_index.results }}"
+
+    - name: verify backend DB response
+      uri:
+        url: http://{{ item }}/db
+        return_content: yes
+      with_items:
+         - "{{ groups['application'] }}"
+      register: app_db
+
+    - name: "fail if there is missing content"
+      fail:
+        msg: "DB failed to return content"
+      when: "'Database Connected from' not in item.content"
+      with_items: "{{ app_db.results }}"
+

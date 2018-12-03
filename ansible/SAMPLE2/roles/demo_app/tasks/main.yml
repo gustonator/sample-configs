@@ -1,0 +1,29 @@
+---
+# tasks file for demo_app
+  - name: Install components
+    apt:
+      pkg: "{{ packages }}"
+      state: present
+      cache_valid_time: 18000
+    vars:
+      packages:
+        - python-pip
+        - python-virtualenv
+        - python-mysqldb
+
+  - name: copy demo app source
+    copy: src=demo/app/ dest=/var/www/html/demo mode=0775
+    notify: restart apache2
+
+  - name: copy apache virtual hosts config
+    copy: src=demo/demo.conf dest=/etc/apache2/sites-available mode=0755
+    notify: restart apache2
+
+  - name: setup python virtualenv
+    pip: requirements=/var/www/html/demo/requirements.txt virtualenv=/var/www/html/demo/.venv
+    notify: restart apache2
+
+  - name: activate new site
+    file: src=/etc/apache2/sites-available/demo.conf dest=/etc/apache2/sites-enabled/demo.conf state=link
+    notify: restart apache2
+

@@ -1,0 +1,12 @@
+---
+# tasks file for control
+- name: install tools
+  apt:
+    pkg: "{{ item }}"
+    state: present
+    update_cache: yes
+  vars:
+    item:
+      - curl
+      - python-httplib2
+

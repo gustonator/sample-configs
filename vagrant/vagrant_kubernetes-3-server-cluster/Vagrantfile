@@ -1,0 +1,73 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+##################################
+####    KUBERNETES SERVERS   #####
+##################################
+#
+# 1x master server
+# 2x worker server
+#
+
+
+Vagrant.configure("2") do |config|
+  # Box Settings
+  config.vm.provision "shell", inline: "echo Kubernetes VM configuration"
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.box_check_update = false
+
+
+  # Network settings
+  # config.vm.network "private_network", ip: "192.168.56.100"
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # config.vm.network "public_network"
+
+  # Folder settings
+  # config.vm.synced_folder "c:/Software/VM_Shared_folder", "/vagrant_data"
+
+
+  #Creating MASTER NODE
+  config.vm.define "kubemaster" do |master|
+  	master.vm.hostname = "kubemaster"
+  	# Povider settings
+  	master.vm.provider :virtualbox do |vb|
+          vb.name = "kubemaster"
+  		vb.memory = 512
+  		vb.cpus =  1
+      end
+
+  	#Network settings
+  	master.vm.network "private_network", ip: "192.168.56.100"
+
+  	#Folder settings
+  	master.vm.synced_folder "c:\\Software\\VM_Shared_folder", "/vagrant_data"
+
+  	#Run
+  	node.vm.provision "shell", path: "install.sh"
+  end
+
+
+
+  #Creating WORKER NODES
+  (1..2).each do |i|
+	  config.vm.define "kubenode#{i}" do |node|
+		node.vm.hostname = "kubemnode#{i}"
+
+		# Povider settings
+		node.vm.provider :virtualbox do |vb|
+			vb.name = "kubenode#{i}"
+			vb.memory = 512
+			vb.cpus =  1
+		end
+
+		#Network settings
+		node.vm.network "private_network", ip: "192.168.56.10#{i}"
+
+		#Folder settings
+		node.vm.synced_folder "c:\\Software\\VM_Shared_folder", "/vagrant_data"
+
+		#Run
+		node.vm.provision "shell", path: "install.sh"
+	  end
+   end
+end

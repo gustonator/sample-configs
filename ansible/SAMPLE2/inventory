@@ -1,0 +1,13 @@
+[control]
+ansible-control ansible_host=192.168.56.70 ansible_connections=local
+
+[loadbalancer]
+192.168.56.71
+
+[application]
+192.168.56.72
+192.168.56.74
+
+[database]
+192.168.56.73
+

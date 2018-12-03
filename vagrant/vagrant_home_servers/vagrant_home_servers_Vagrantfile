@@ -1,0 +1,143 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+##################################
+####      HOME SERVERS       #####
+##################################
+#
+# 1x control server
+#
+#
+
+Vagrant.configure("2") do |config|
+  # Box settings
+  config.vm.provision "shell", inline: "echo HOME VM configuration"
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.box_check_update = false
+
+  # Network settings
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # config.vm.network "private_network", ip: "192.168.56.200"
+  # config.vm.network "public_network"
+
+  # Folder settings
+  # config.vm.synced_folder "c:/Software/VM_Shared_folder", "/vagrant_data"
+
+  #define script for basic setup
+  $basic_setup = <<-SCRIPT
+	echo "Basic setup"
+  	apt-get update
+  	apt-get install -y ssh
+  	service ssh enable
+  	service ssh start
+
+  	#disable swapping
+  	swapoff -a
+  	#comment it in the fstab
+  	sed -e '/swap/ s/^#*/#/' -i /etc/fstab
+  SCRIPT
+
+
+  #Creating MASTER Control NODE
+  config.vm.define "control" do |control|
+  	control.vm.hostname = "control"
+
+  	# Povider settings
+  	control.vm.provider :virtualbox do |vb|
+      vb.name = "control"
+  		vb.memory = 512
+  		vb.cpus =  1
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+      vb.customize ["modifyvm", :id, "--draganddrop", "disabled"]
+      end
+
+  	# Network settings
+  	control.vm.network "private_network", ip: "192.168.10.11"
+
+  	# Folder settings
+  	#windows
+    #control.vm.synced_folder "c:\\temp", "/vagrant_data"	, :mount_options => ["dmode=777", "fmode=666"]
+    #linux
+    control.vm.synced_folder "/data/share", "/vagrant_data"	, :mount_options => ["dmode=777", "fmode=666"]
+
+    control.vm.provision "shell", inline: $basic_setup
+  end
+
+
+  #Creating WEBSERVER NODES
+  (1..2).each do |i|
+	  config.vm.define "webserver0#{i}" do |webserver|
+		webserver.vm.hostname = "webserver0#{i}"
+
+		# Povider settings
+		webserver.vm.provider :virtualbox do |vb|
+      vb.name = "webserver0#{i}-webserver"
+			vb.memory = 512
+			vb.cpus =  1
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+      vb.customize ["modifyvm", :id, "--draganddrop", "disabled"]
+		end
+
+		webserver.vm.network "private_network", ip: "192.168.10.1#{i+2}"
+		#linux
+    webserver.vm.synced_folder "/data/share", "/vagrant_data"
+    #windows
+    #webserver.vm.synced_folder "c:\\temp", "/vagrant_data"
+		webserver.vm.provision "shell", inline: $basic_setup
+	  end
+   end
+
+
+
+  # Creating DATABASE NODE
+  config.vm.define "database01" do |database|
+   	database.vm.hostname = "database01"
+
+   	# Povider settings
+   	database.vm.provider :virtualbox do |vb|
+      vb.name = "database01"
+   		vb.memory = 512
+   		vb.cpus =  1
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+      vb.customize ["modifyvm", :id, "--draganddrop", "disabled"]
+       end
+
+   	# Network settings
+   	database.vm.network "private_network", ip: "192.168.10.14"
+   	# Folder settings
+   	database.vm.synced_folder "/data/share", "/vagrant_data"	, :mount_options => ["dmode=777", "fmode=666"]
+  end
+
+
+
+    #Creating LOADBALANCER NODE
+    config.vm.define "loadbalancer01" do |loadbalancer|
+     	loadbalancer.vm.hostname = "loadbalancer01"
+
+     	# Povider settings
+     	loadbalancer.vm.provider :virtualbox do |vb|
+        vb.name = "loadbalancer01"
+     		vb.memory = 512
+     		vb.cpus =  1
+        vb.gui = false
+        vb.customize ["modifyvm", :id, "--usb", "off"]
+        vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+        vb.customize ["modifyvm", :id, "--draganddrop", "disabled"]
+         end
+
+     	# Network settings
+     	loadbalancer.vm.network "private_network", ip: "192.168.10.15"
+     	# Folder settings
+     	loadbalancer.vm.synced_folder "/data/share", "/vagrant_data"	, :mount_options => ["dmode=777", "fmode=666"]
+    end
+
+end

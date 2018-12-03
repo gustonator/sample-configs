@@ -1,0 +1,21 @@
+---
+- name: install apache & php $ mysql
+  hosts: node1
+  become: true
+  become_user: root
+  gather_facts: true
+  tasks:
+  - name: "Ensure apache is the newest version:
+    apt: name=httpd state=latest
+
+  - name: "write apache config"
+  copy: src=/toor/httpd.new dest=/etc/httpd.conf
+    notify:
+ - restart apache
+
+  - name: "Ensure apache is running and enabled at boot"
+    service: name=httpd state=started enabled=yes
+
+  handlers:
+    - name: restart apache
+      service: name=httpd state=restarted

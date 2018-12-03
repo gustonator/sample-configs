@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  become_user: root
+
+  tasks:
+    - name: "Install pip"
+      apt: name=python-pip state=present
+
+    - name: "Install lib mysql"
+      apt: name=libmysqlclient-dev state=present
+
+    - name: "Install the Python MySQL module"
+      pip: name=MySQL-python
+
+    - name: "Create database user edureka"
+      mysql_user: user=edureka password=edureka priv=*.*:ALL state=present
+
+    - name: "Install database edu"
+      mysql_db: db=edu state=present
+
+    - name: "Create a table"
+      command: mysql -u edureka -p edureka -e 'CREATE TABLE reg (name varchar(30),email varchar (30));' edu
+
